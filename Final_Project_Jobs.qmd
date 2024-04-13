@@ -27,29 +27,46 @@ If I have time, I may try to include a user option to try fitting logistic regre
 ```{r}
 library(shiny)
 
-job_vec <- salary |> distinct(Job.Title) |> pull(Job.Title)
-experience_vec <- salary |> distinct(Experience.Level) |> pull(Experience.Level)
-location_vec  <- salary |> distinct(Company.Location) |> pull(Company.Location) |> fct_expand("Any")
-size_vec <- salary |> distinct(Company.Size) |> pull(Company.Size)
-type_vec <- salary |> distinct(Employment.Type) |> pull(Employment.Type) |> fct_expand("Any")
-year_vec  <- salary |> distinct(Year) |> pull(Year) |> fct_expand("All")
+job_vec <- unique(salary$Job.Title) |>
+  fct_expand("All") |>
+  levels()
+
+location_vec <- unique(salary$Company.Location) |>
+  fct_expand("All") |>
+  levels()
+
+type_vec <- unique(salary$Employment.Type) |>
+  fct_expand("All") |>
+  levels()
 
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(selectInput(inputId = "job_sel", 
-                             label = "Choose a Job:",
-                             choices = job_vec),
+                             label = "Select a Job:",
+                             choices = job_vec,
+                             selected = "Data Scientist"),
                  checkboxGroupInput(inputId = "exp_sel",
-                                    label = "Choose an Experience Level:",
+                                    label = "Select an Experience Level:",
                                     choices = c("Entry", "Mid", "Senior", "Executive")),
                  selectInput(inputId = "location_sel",
-                             label = "Choose a Location:",
+                             label = "Select a Location:",
                              choices = location_vec,
-                             selected = "Any"),
+                             selected = "United States"),
                  checkboxGroupInput(inputId = "size_sel",
-                                    label = "Choose a Company Size:",
-                                    choices = c("Small", "Medium", "Large"))
-                 ),
+                                    label = "Select a Company Size:",
+                                    choices = c("Small", "Medium", "Large")),
+                 checkboxGroupInput(inputId = "year_sel",
+                                    label = "Select Any Year(s):",
+                                    choices = c(2020:2024)),
+                 selectInput(inputId = "type_sel",
+                             label = "Select an Employment Type:",
+                             choices = type_vec,
+                             selected = "All"),
+                 sliderInput(inputId = "bin_sel",
+                             label = "Select a Number of Histogram Bins:",
+                             min = 1,
+                             max = 50,
+                             value = 15)),
     mainPanel(plotOutput(outputId = "hist_plot"),
               tableOutput(outputId = "data_table"))
   )
@@ -70,18 +87,36 @@ server <- function(input, output, session) {
                       choices = player_choices)
   })
   
-  player_react = reactive({
-    player_df = df |> filter(player == input$player_sel)
+  job_react = reactive({
+    
+    if (input$job_sel == "All") {
+      job_df = salary
+    } else {
+      job_df = salary |> filter(Job.Title == input$job_sel)
+    }
+    job_df
+    
   })
   
   output$hist_plot = renderPlot({
-    ggplot(data = player_react(), aes(x = .data[[input$var_sel]])) +
-      geom_histogram(bins = input$bin_sel, col = "darkolivegreen4", fill = "darkolivegreen2") +
-      labs(title = glue::glue("Histogram of ", input$var_sel, " Stats for ", input$player_sel)) +
-      theme_minimal(base_size = 25)
+    ggplot(data = job_react(), aes(x = Salary.in.USD)) +
+      geom_histogram(bins = input$bin_sel, col = "lightblue4", fill = "lightblue") +
+      labs(title = glue::glue("Histogram of Salary (USD) for ", input$job_sel, " Jobs")) +
+      theme_minimal(base_size = 25) +
+      labs(x = "Salary (USD)")
   })
   
-  output$data_table = renderTable({df})
+  output$data_table = renderTable({
+    
+    job_react() |> group_by(Job.Title) |>
+      summarise(mean_salary = mean(Salary.in.USD),
+                median_salary = median(Salary.in.USD),
+                minimum_salary = min(Salary.in.USD),
+                maximum_salary = max(Salary.in.USD),
+                sd_salary = sd(Salary.in.USD),
+                count = n())
+    
+  })
 }
 shinyApp(ui, server)
 ```
