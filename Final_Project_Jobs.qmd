@@ -94,7 +94,23 @@ server <- function(input, output, session) {
     } else {
       job_df = salary |> filter(Job.Title == input$job_sel)
     }
-    job_df
+    
+    if (input$location_sel == "All") {
+      job_df = job_df
+    } else {
+      job_df = job_df |> filter(Company.Location == input$location_sel)
+    }
+    
+    if (input$type_sel == "All") {
+      job_df = job_df
+    } else {
+      job_df = job_df |> filter(Employment.Type == input$type_sel)
+    }
+    
+    job_df = job_df |> 
+      filter(Experience.Level %in% input$exp_sel) |>
+      filter(Company.Size %in% input$size_sel) |>
+      filter(Year %in% input$year_sel)
     
   })
   
