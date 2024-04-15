@@ -13,7 +13,8 @@ library(tidyverse)
 theme_set(theme_minimal())
 
 salary <- read.csv("data/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors = TRUE) |>
-  mutate(Year = as_factor(Year))
+  mutate(Year = as_factor(Year)) |>
+  filter(!is.na(Salary.in.USD))
 ```
 
 ## My goal for this final project is to create a shiny app that allows the user to visualize the data in as many different ways as possible!
@@ -32,11 +33,11 @@ job_vec <- unique(salary$Job.Title) |>
   levels()
 
 location_vec <- unique(salary$Company.Location) |>
-  fct_expand("All") |>
+  fct_expand("Any") |>
   levels()
 
 type_vec <- unique(salary$Employment.Type) |>
-  fct_expand("All") |>
+  fct_expand("Any") |>
   levels()
 
 ui <- fluidPage(
@@ -47,21 +48,25 @@ ui <- fluidPage(
                              selected = "Data Scientist"),
                  checkboxGroupInput(inputId = "exp_sel",
                                     label = "Select an Experience Level:",
-                                    choices = c("Entry", "Mid", "Senior", "Executive")),
+                                    choices = c("Entry", "Mid", "Senior", "Executive"),
+                                    selected = c("Entry", "Mid", "Senior", "Executive")),
                  selectInput(inputId = "location_sel",
                              label = "Select a Location:",
                              choices = location_vec,
                              selected = "United States"),
                  checkboxGroupInput(inputId = "size_sel",
                                     label = "Select a Company Size:",
-                                    choices = c("Small", "Medium", "Large")),
-                 checkboxGroupInput(inputId = "year_sel",
-                                    label = "Select Any Year(s):",
-                                    choices = c(2020:2024)),
+                                    choices = c("Small", "Medium", "Large"),
+                                    selected = c("Small", "Medium", "Large")),
+                 sliderInput(inputId = "year_sel",
+                             label = "Select Any Year(s):",
+                             min = 2020,
+                             max = 2024,
+                             value = c(2020,2024)),
                  selectInput(inputId = "type_sel",
                              label = "Select an Employment Type:",
                              choices = type_vec,
-                             selected = "All"),
+                             selected = "Any"),
                  sliderInput(inputId = "bin_sel",
                              label = "Select a Number of Histogram Bins:",
                              min = 1,
@@ -95,13 +100,13 @@ server <- function(input, output, session) {
       job_df = salary |> filter(Job.Title == input$job_sel)
     }
     
-    if (input$location_sel == "All") {
+    if (input$location_sel == "Any") {
       job_df = job_df
     } else {
       job_df = job_df |> filter(Company.Location == input$location_sel)
     }
     
-    if (input$type_sel == "All") {
+    if (input$type_sel == "Any") {
       job_df = job_df
     } else {
       job_df = job_df |> filter(Employment.Type == input$type_sel)
@@ -110,7 +115,7 @@ server <- function(input, output, session) {
     job_df = job_df |> 
       filter(Experience.Level %in% input$exp_sel) |>
       filter(Company.Size %in% input$size_sel) |>
-      filter(Year %in% input$year_sel)
+      filter(Year >= input$year_sel[1] && Year <= input$year_sel[2])
     
   })
   
