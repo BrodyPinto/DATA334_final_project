@@ -12,7 +12,7 @@ library(tidyverse)
 
 theme_set(theme_minimal())
 
-salary <- read.csv("archive (1)/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors = TRUE) |>
+salary <- read.csv("data/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors = TRUE) |>
   mutate(Year = as_factor(Year))
 ```
 
