@@ -13,8 +13,24 @@ library(tidyverse)
 theme_set(theme_minimal())
 
 salary <- read.csv("data/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors = TRUE) |>
-  mutate(Year = as_factor(Year)) |>
   filter(!is.na(Salary.in.USD))
+
+## Question: What happens in the case_when when there is a "Business Intelligence Analyst"?
+
+salary |>
+  mutate(Job.Category = case_when(str_detect(Job.Title, pattern = "AI ") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Autonomous") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Computer Vision") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics",
+                                  str_detect(Job.Title, pattern = "BI ") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Business") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Data Sci") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "ML ") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Machine") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "big ") == TRUE ~ "Big Data",
+                                  str_detect(Job.Title, pattern = "cloud") == TRUE ~ "Cloud Data",
+                                  str_detect(Job.Title, pattern = "Data Operations") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Integration") == TRUE ~ "Data Operations"))
 ```
 
 ## My goal for this final project is to create a shiny app that allows the user to visualize the data in as many different ways as possible!
@@ -115,7 +131,7 @@ server <- function(input, output, session) {
     job_df = job_df |> 
       filter(Experience.Level %in% input$exp_sel) |>
       filter(Company.Size %in% input$size_sel) |>
-      filter(Year >= input$year_sel[1] && Year <= input$year_sel[2])
+      filter(Year >= input$year_sel[1] & Year <= input$year_sel[2])
     
   })
   
@@ -136,7 +152,6 @@ server <- function(input, output, session) {
                 maximum_salary = max(Salary.in.USD),
                 sd_salary = sd(Salary.in.USD),
                 count = n())
-    
   })
 }
 shinyApp(ui, server)
