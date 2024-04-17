@@ -17,19 +17,22 @@ salary <- read.csv("data/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors 
 
 ## Question: What happens in the case_when when there is a "Business Intelligence Analyst"?
 
-salary |>
+salary = salary |>
   mutate(Job.Category = case_when(str_detect(Job.Title, pattern = "AI ") == TRUE ~ "Artificial Intelligence",
                                   str_detect(Job.Title, pattern = "Autonomous") == TRUE ~ "Artificial Intelligence",
                                   str_detect(Job.Title, pattern = "Computer Vision") == TRUE ~ "Artificial Intelligence",
-                                  str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics",
+                                  str_detect(Job.Title, pattern = "NLP") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Prompt Engineer") == TRUE ~ "Artificial Intelligence",
                                   str_detect(Job.Title, pattern = "BI ") == TRUE ~ "Business Intelligence",
                                   str_detect(Job.Title, pattern = "Business") == TRUE ~ "Business Intelligence",
                                   str_detect(Job.Title, pattern = "Data Product") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Financ") == TRUE ~ "Business Intelligence",
                                   str_detect(Job.Title, pattern = "Data Sci") == TRUE ~ "Data Science",
                                   str_detect(Job.Title, pattern = "Data Lead") == TRUE ~ "Data Science",
-                                  str_detect(Job.Title, pattern = "Data Manager") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Manage") == TRUE ~ "Data Science",
                                   str_detect(Job.Title, pattern = "Data Specialist") == TRUE ~ "Data Science",
-                                  str_detect(Job.Title, pattern = "ML ") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Head of Data") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "ML") == TRUE ~ "Machine Learning",
                                   str_detect(Job.Title, pattern = "Machine") == TRUE ~ "Machine Learning",
                                   str_detect(Job.Title, pattern = "Deep Learning") == TRUE ~ "Machine Learning",
                                   str_detect(Job.Title, pattern = "Big ") == TRUE ~ "Big Data",
@@ -47,8 +50,21 @@ salary |>
                                   str_detect(Job.Title, pattern = "Data Model") == TRUE ~ "Data Modeling",
                                   str_detect(Job.Title, pattern = "Data Quality") == TRUE ~ "Data Quality",
                                   str_detect(Job.Title, pattern = "Data Vis") == TRUE ~ "Data Visualization",
-                                  
+                                  str_detect(Job.Title, pattern = "Research Analyst") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Research Engineer") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Research Scientist") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Applied Scientist") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics"
                                   ))
+
+## to find any categories I may have missed
+missing_vector = vector("numeric", length = 0)
+for (i in salary$Job.Category) {
+  if (!i %in% category_vec) {
+    missing_vector = append(missing_vector, index())
+  }
+}
+print(missing_vector)
 ```
 
 ## My goal for this final project is to create a shiny app that allows the user to visualize the data in as many different ways as possible!
@@ -74,40 +90,52 @@ type_vec <- unique(salary$Employment.Type) |>
   fct_expand("Any") |>
   levels()
 
+category_vec <- unique(salary$Job.Category) |>
+  fct_expand("Any") |>
+  levels()
+
 ui <- fluidPage(
-  sidebarLayout(
-    sidebarPanel(selectInput(inputId = "job_sel", 
-                             label = "Select a Job:",
-                             choices = job_vec,
-                             selected = "Data Scientist"),
-                 checkboxGroupInput(inputId = "exp_sel",
-                                    label = "Select an Experience Level:",
-                                    choices = c("Entry", "Mid", "Senior", "Executive"),
-                                    selected = c("Entry", "Mid", "Senior", "Executive")),
-                 selectInput(inputId = "location_sel",
-                             label = "Select a Location:",
-                             choices = location_vec,
-                             selected = "United States"),
-                 checkboxGroupInput(inputId = "size_sel",
-                                    label = "Select a Company Size:",
-                                    choices = c("Small", "Medium", "Large"),
-                                    selected = c("Small", "Medium", "Large")),
-                 sliderInput(inputId = "year_sel",
-                             label = "Select Any Year(s):",
-                             min = 2020,
-                             max = 2024,
-                             value = c(2020,2024)),
-                 selectInput(inputId = "type_sel",
-                             label = "Select an Employment Type:",
-                             choices = type_vec,
-                             selected = "Any"),
-                 sliderInput(inputId = "bin_sel",
-                             label = "Select a Number of Histogram Bins:",
-                             min = 1,
-                             max = 50,
-                             value = 15)),
-    mainPanel(plotOutput(outputId = "hist_plot"),
-              tableOutput(outputId = "data_table"))
+  tabsetPanel(
+    tabPanel("Job Salaries", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(selectInput(inputId = "category_sel", 
+                                        label = "Select a Job Category:",
+                                        choices = category_vec,
+                                        selected = "Any"),
+                           selectInput(inputId = "job_sel", 
+                                                  label = "Select a Job:",
+                                                  choices = job_vec,
+                                                  selected = "Data Scientist"),
+                            checkboxGroupInput(inputId = "exp_sel",
+                                               label = "Select an Experience Level:",
+                                               choices = c("Entry", "Mid", "Senior", "Executive"),
+                                               selected = c("Entry", "Mid", "Senior", "Executive")),
+                            selectInput(inputId = "location_sel",
+                                        label = "Select a Location:",
+                                        choices = location_vec,
+                                        selected = "United States"),
+                            checkboxGroupInput(inputId = "size_sel",
+                                               label = "Select a Company Size:",
+                                               choices = c("Small", "Medium", "Large"),
+                                               selected = c("Small", "Medium", "Large")),
+                            sliderInput(inputId = "year_sel",
+                                        label = "Select Any Year(s):",
+                                        min = 2020,
+                                        max = 2024,
+                                        value = c(2020,2024)),
+                            selectInput(inputId = "type_sel",
+                                        label = "Select an Employment Type:",
+                                        choices = type_vec,
+                                        selected = "Any"),
+                            sliderInput(inputId = "bin_sel",
+                                        label = "Select a Number of Histogram Bins:",
+                                        min = 1,
+                                        max = 50,
+                                        value = 15)),
+               mainPanel(plotOutput(outputId = "hist_plot"),
+                         tableOutput(outputId = "data_table"))
+             )
+    )
   )
 )
 
