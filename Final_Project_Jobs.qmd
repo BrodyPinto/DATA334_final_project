@@ -24,13 +24,31 @@ salary |>
                                   str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics",
                                   str_detect(Job.Title, pattern = "BI ") == TRUE ~ "Business Intelligence",
                                   str_detect(Job.Title, pattern = "Business") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Data Product") == TRUE ~ "Business Intelligence",
                                   str_detect(Job.Title, pattern = "Data Sci") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Lead") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Manager") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Specialist") == TRUE ~ "Data Science",
                                   str_detect(Job.Title, pattern = "ML ") == TRUE ~ "Machine Learning",
                                   str_detect(Job.Title, pattern = "Machine") == TRUE ~ "Machine Learning",
-                                  str_detect(Job.Title, pattern = "big ") == TRUE ~ "Big Data",
-                                  str_detect(Job.Title, pattern = "cloud") == TRUE ~ "Cloud Data",
+                                  str_detect(Job.Title, pattern = "Deep Learning") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Big ") == TRUE ~ "Big Data",
+                                  str_detect(Job.Title, pattern = "Cloud") == TRUE ~ "Cloud Data",
+                                  str_detect(Job.Title, pattern = "Data Architect") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Engineer") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Developer") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Infrastructure") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "ETL ") == TRUE ~ "Data Organization",
                                   str_detect(Job.Title, pattern = "Data Operations") == TRUE ~ "Data Operations",
-                                  str_detect(Job.Title, pattern = "Data Integration") == TRUE ~ "Data Operations"))
+                                  str_detect(Job.Title, pattern = "DevOps") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Integration") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Strateg") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Decision Scientist") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Model") == TRUE ~ "Data Modeling",
+                                  str_detect(Job.Title, pattern = "Data Quality") == TRUE ~ "Data Quality",
+                                  str_detect(Job.Title, pattern = "Data Vis") == TRUE ~ "Data Visualization",
+                                  
+                                  ))
 ```
 
 ## My goal for this final project is to create a shiny app that allows the user to visualize the data in as many different ways as possible!
