@@ -61,7 +61,7 @@ salary = salary |>
 missing_vector = vector("numeric", length = 0)
 for (i in salary$Job.Category) {
   if (!i %in% category_vec) {
-    missing_vector = append(missing_vector, index())
+    missing_vector = append(missing_vector, index(i))
   }
 }
 print(missing_vector)
@@ -82,6 +82,9 @@ job_vec <- unique(salary$Job.Title) |>
   fct_expand("All") |>
   levels()
 
+exp_vec <- unique(salary$Experience.Level) |>
+  levels()
+
 location_vec <- unique(salary$Company.Location) |>
   fct_expand("Any") |>
   levels()
@@ -94,6 +97,14 @@ category_vec <- unique(salary$Job.Category) |>
   fct_expand("Any") |>
   levels()
 
+## why is this changing the vector element of United Kingdom to 73???
+toy_vec = salary |>
+  filter(Job.Title == "Data Quality Manager") |>
+  distinct(Company.Location) |>
+  pull(Company.Location) |>
+  append("Any")
+
+
 ui <- fluidPage(
   tabsetPanel(
     tabPanel("Job Salaries", fluid = TRUE,
@@ -102,18 +113,17 @@ ui <- fluidPage(
                                         label = "Select a Job Category:",
                                         choices = category_vec,
                                         selected = "Any"),
-                           selectInput(inputId = "job_sel", 
-                                                  label = "Select a Job:",
-                                                  choices = job_vec,
-                                                  selected = "Data Scientist"),
+                            selectInput(inputId = "job_sel", 
+                                        label = "Select a Job:",
+                                        choices = job_vec),
                             checkboxGroupInput(inputId = "exp_sel",
                                                label = "Select an Experience Level:",
-                                               choices = c("Entry", "Mid", "Senior", "Executive"),
-                                               selected = c("Entry", "Mid", "Senior", "Executive")),
+                                               choices = exp_vec,
+                                               selected = exp_vec),
                             selectInput(inputId = "location_sel",
                                         label = "Select a Location:",
-                                        choices = location_vec,
-                                        selected = "United States"),
+                                        choices = location_vec, 
+                                        selected = "Any"),
                             checkboxGroupInput(inputId = "size_sel",
                                                label = "Select a Company Size:",
                                                choices = c("Small", "Medium", "Large"),
@@ -141,17 +151,44 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+  
   ## observeEvent(): first argument is either an input or a reactive data frame
   ## when something in the first argument changes, the code in the { } is triggered to update
-  observeEvent(input$tour_sel, {
+  observeEvent(input$category_sel, {
     
-    player_choices = df |> 
-      filter(tour == input$tour_sel) |>
-      distinct(player) |> 
-      pull(player)
+    if (input$category_sel == "Any") {
+      job_vec = job_vec
+    } else {
+      job_vec = salary |> 
+        filter(Job.Category == input$category_sel) |>
+        distinct(Job.Title) |>
+        pull(Job.Title)
+    }
     
-    updateSelectInput(inputId = "player_sel",
-                      choices = player_choices)
+    updateSelectInput(inputId = "job_sel",
+                      choices = job_vec)
+  })
+  
+  observeEvent(input$job_sel, {
+    
+    location_vec = salary |>
+      filter(Job.Title == input$job_sel) |>
+      distinct(Company.Location) |>
+      pull(Company.Location) |>
+      append("Any")
+    
+    exp_vec = salary |>
+      filter(Job.Title == input$job_sel) |>
+      distinct(Experience.Level) |>
+      pull(Experience.Level)
+    
+    updateSelectInput(inputId = "location_sel",
+                      choices = location_vec,
+                      selected = "Any")
+     
+    updateCheckboxGroupInput(inputId = "exp_sel",
+                             choices = exp_vec,
+                             selected = exp_vec)
   })
   
   job_react = reactive({
