@@ -55,7 +55,11 @@ salary = salary |>
                                   str_detect(Job.Title, pattern = "Research Scientist") == TRUE ~ "Research",
                                   str_detect(Job.Title, pattern = "Applied Scientist") == TRUE ~ "Research",
                                   str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics"
-                                  ))
+                                  )) |>
+  mutate(Company.Location = as.character(Company.Location),
+         Employment.Type = as.character(Employment.Type),
+         Experience.Level = fct_relevel(Experience.Level, c("Entry", "Mid", "Senior", "Executive")),
+         Company.Size = fct_relevel(Company.Size, c("Small", "Medium", "Large")))
 
 ## to find any categories I may have missed
 missing_vector = vector("numeric", length = 0)
@@ -85,25 +89,28 @@ job_vec <- unique(salary$Job.Title) |>
 exp_vec <- unique(salary$Experience.Level) |>
   levels()
 
-location_vec <- unique(salary$Company.Location) |>
-  fct_expand("Any") |>
+location_vec = salary |>
+  distinct(Company.Location) |>
+  pull(Company.Location) |>
+  append("Any")
+
+size_vec = unique(salary$Company.Size) |>
   levels()
 
-type_vec <- unique(salary$Employment.Type) |>
-  fct_expand("Any") |>
-  levels()
+type_vec <- salary |>
+  distinct(Employment.Type) |>
+  pull(Employment.Type) |>
+  append("Any")
 
 category_vec <- unique(salary$Job.Category) |>
   fct_expand("Any") |>
   levels()
 
-## why is this changing the vector element of United Kingdom to 73???
 toy_vec = salary |>
   filter(Job.Title == "Data Quality Manager") |>
   distinct(Company.Location) |>
   pull(Company.Location) |>
   append("Any")
-
 
 ui <- fluidPage(
   tabsetPanel(
@@ -126,8 +133,8 @@ ui <- fluidPage(
                                         selected = "Any"),
                             checkboxGroupInput(inputId = "size_sel",
                                                label = "Select a Company Size:",
-                                               choices = c("Small", "Medium", "Large"),
-                                               selected = c("Small", "Medium", "Large")),
+                                               choices = size_vec,
+                                               selected = size_vec),
                             sliderInput(inputId = "year_sel",
                                         label = "Select Any Year(s):",
                                         min = 2020,
@@ -179,8 +186,21 @@ server <- function(input, output, session) {
     
     exp_vec = salary |>
       filter(Job.Title == input$job_sel) |>
-      distinct(Experience.Level) |>
-      pull(Experience.Level)
+      mutate(Experience.Level = fct_drop(Experience.Level)) |>
+      pull(Experience.Level) |>
+      levels()
+    
+    size_vec = salary |>
+      filter(Job.Title == input$job_sel) |>
+      mutate(Company.Size = fct_drop(Company.Size)) |>
+      pull(Company.Size) |>
+      levels()
+    
+    type_vec = salary |>
+      filter(Job.Title == input$job_sel) |>
+      distinct(Employment.Type) |>
+      pull(Employment.Type) |>
+      append("Any")
     
     updateSelectInput(inputId = "location_sel",
                       choices = location_vec,
@@ -189,6 +209,14 @@ server <- function(input, output, session) {
     updateCheckboxGroupInput(inputId = "exp_sel",
                              choices = exp_vec,
                              selected = exp_vec)
+    
+    updateCheckboxGroupInput(inputId = "size_sel",
+                             choices = size_vec,
+                             selected = size_vec)
+    
+    updateSelectInput(inputId = "type_sel",
+                      choices = type_vec,
+                      selected = "Any")
   })
   
   job_react = reactive({
