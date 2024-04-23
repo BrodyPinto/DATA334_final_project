@@ -112,6 +112,9 @@ toy_vec = salary |>
   pull(Company.Location) |>
   append("Any")
 
+variable_vec = names(salary)[c(2,3,10,11)]
+color_vec = names(salary)[c(2,3,7,10,11)]
+
 ui <- fluidPage(
   tabsetPanel(
     tabPanel("Job Salaries", fluid = TRUE,
@@ -152,17 +155,32 @@ ui <- fluidPage(
                mainPanel(plotOutput(outputId = "hist_plot"),
                          tableOutput(outputId = "data_table"))
              )
+    ), 
+    tabPanel("Frequency Plots", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(selectInput(inputId = "category_sel1", 
+                                        label = "Select a Job Category:",
+                                        choices = category_vec,
+                                        selected = "Any"),
+                            selectInput(inputId = "job_sel1", 
+                                        label = "Select a Job:",
+                                        choices = job_vec),
+                            radioButtons(inputId = "var_sel",
+                                         label = "Select a Variable to Facet by:",
+                                         choices = variable_vec,
+                                         selected = "Experience.Level"),
+                            radioButtons(inputId = "color_sel",
+                                         label = "Select a Variable to Color by:",
+                                         choices = color_vec)),
+               mainPanel(plotOutput(outputId = "freq_plot"))
+             )
     )
   )
 )
 
 server <- function(input, output, session) {
   
-  
-  ## observeEvent(): first argument is either an input or a reactive data frame
-  ## when something in the first argument changes, the code in the { } is triggered to update
   observeEvent(input$category_sel, {
-    
     if (input$category_sel == "Any") {
       job_vec = job_vec
     } else {
@@ -173,6 +191,20 @@ server <- function(input, output, session) {
     }
     
     updateSelectInput(inputId = "job_sel",
+                      choices = job_vec)
+  })
+  
+  observeEvent(input$category_sel1, {
+    if (input$category_sel1 == "Any") {
+      job_vec = job_vec
+    } else {
+      job_vec = salary |> 
+        filter(Job.Category == input$category_sel1) |>
+        distinct(Job.Title) |>
+        pull(Job.Title)
+    }
+    
+    updateSelectInput(inputId = "job_sel1",
                       choices = job_vec)
   })
   
@@ -219,6 +251,13 @@ server <- function(input, output, session) {
                       selected = "Any")
   })
   
+  observeEvent(input$var_sel, {
+    color_vec = color_vec[color_vec != input$var_sel]
+    
+    updateRadioButtons(inputId = "color_sel",
+                       choices = color_vec)
+  })
+  
   job_react = reactive({
     
     if (input$job_sel == "All") {
@@ -243,19 +282,33 @@ server <- function(input, output, session) {
       filter(Experience.Level %in% input$exp_sel) |>
       filter(Company.Size %in% input$size_sel) |>
       filter(Year >= input$year_sel[1] & Year <= input$year_sel[2])
-    
+  })
+  
+  freq_react = reactive({
+    freq_df = salary |>
+      filter(Job.Title == input$job_sel1)
+    freq_df
+  })
+  
+  output$freq_plot = renderPlot({
+    ggplot(data = freq_react(), aes(x = Salary.in.USD, color = as_factor(.data[[input$color_sel]]))) +
+      geom_freqpoly(linewidth = 1, alpha = 0.7) +
+      facet_wrap(~ .data[[input$var_sel]]) +
+      labs(title = glue::glue("Frequency Plot of Salary (USD) for ", input$job_sel1, " Jobs")) +
+      theme_minimal(base_size = 20) +
+      labs(x = "Salary (USD)", color = input$color_sel) +
+      scale_color_viridis_d()
   })
   
   output$hist_plot = renderPlot({
     ggplot(data = job_react(), aes(x = Salary.in.USD)) +
       geom_histogram(bins = input$bin_sel, col = "lightblue4", fill = "lightblue") +
       labs(title = glue::glue("Histogram of Salary (USD) for ", input$job_sel, " Jobs")) +
-      theme_minimal(base_size = 25) +
+      theme_minimal(base_size = 20) +
       labs(x = "Salary (USD)")
   })
   
   output$data_table = renderTable({
-    
     job_react() |> group_by(Job.Title) |>
       summarise(mean_salary = mean(Salary.in.USD),
                 median_salary = median(Salary.in.USD),
