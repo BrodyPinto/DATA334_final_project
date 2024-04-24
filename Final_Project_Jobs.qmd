@@ -171,7 +171,12 @@ ui <- fluidPage(
                                          selected = "Experience.Level"),
                             radioButtons(inputId = "color_sel",
                                          label = "Select a Variable to Color by:",
-                                         choices = color_vec)),
+                                         choices = color_vec),
+                            sliderInput(inputId = "n_sel",
+                                        label = "Filter Jobs by Minimum Count:",
+                                        min = 1,
+                                        max = 500,
+                                        value = 10)),
                mainPanel(plotOutput(outputId = "freq_plot"))
              )
     )
@@ -203,6 +208,21 @@ server <- function(input, output, session) {
         distinct(Job.Title) |>
         pull(Job.Title)
     }
+    
+    updateSelectInput(inputId = "job_sel1",
+                      choices = job_vec)
+  })
+  
+  
+  ## can I put this observe event inside the above one to have it constantly update the list of choices in job_vec based on both the category_sel and n_sel?
+  observeEvent(input$n_sel, {
+    n_filter = salary |>
+      group_by(Job.Title) |>
+      summarise(count = n()) |>
+      filter(count >= input$n_sel) |>
+      pull(Job.Title)
+    
+    job_vec = job_vec[job_vec %in% n_filter]
     
     updateSelectInput(inputId = "job_sel1",
                       choices = job_vec)
@@ -258,6 +278,7 @@ server <- function(input, output, session) {
                        choices = color_vec)
   })
   
+  
   job_react = reactive({
     
     if (input$job_sel == "All") {
@@ -292,12 +313,13 @@ server <- function(input, output, session) {
   
   output$freq_plot = renderPlot({
     ggplot(data = freq_react(), aes(x = Salary.in.USD, color = as_factor(.data[[input$color_sel]]))) +
-      geom_freqpoly(linewidth = 1, alpha = 0.7) +
+      geom_freqpoly(linewidth = 1) +
       facet_wrap(~ .data[[input$var_sel]]) +
       labs(title = glue::glue("Frequency Plot of Salary (USD) for ", input$job_sel1, " Jobs")) +
       theme_minimal(base_size = 20) +
       labs(x = "Salary (USD)", color = input$color_sel) +
-      scale_color_viridis_d()
+      scale_color_viridis_d() +
+      theme(axis.text.x = element_text(angle = -45, hjust = 1))
   })
   
   output$hist_plot = renderPlot({
