@@ -1,5 +1,5 @@
 ---
-title: "DATA334 Final Project - Data Science Salaries"
+title: "DATA334 Final Project - Data Science Salaries Shiny App"
 author: "Brody Pinto"
 format: 
   html:
@@ -117,7 +117,7 @@ color_vec = names(salary)[c(2,3,7,10,11)]
 
 ui <- fluidPage(
   tabsetPanel(
-    tabPanel("Job Salaries", fluid = TRUE,
+    tabPanel("Job Salaries Histograms", fluid = TRUE,
              sidebarLayout(
                sidebarPanel(selectInput(inputId = "category_sel", 
                                         label = "Select a Job Category:",
@@ -179,7 +179,21 @@ ui <- fluidPage(
                                         value = 10)),
                mainPanel(plotOutput(outputId = "freq_plot"))
              )
-    )
+    ),
+    tabPanel("Violin Plots", fluid = TRUE,
+             sidebarLayout(
+               sidebarPanel(selectizeInput(inputId = "job_sel2",
+                                           label = "Select a Job:",
+                                           choices = job_vec,
+                                           selected = "Data Scientist",
+                                           multiple = TRUE),
+                            sliderInput(inputId = "n_sel2",
+                                        label = "Filter Jobs by Minimum Count:",
+                                        min = 1,
+                                        max = 500,
+                                        value = 10)),
+               mainPanel(plotOutput(outputId = "violin_plot"))
+             ))
   )
 )
 
@@ -277,6 +291,19 @@ server <- function(input, output, session) {
     updateRadioButtons(inputId = "color_sel",
                        choices = color_vec)
   })
+
+  observeEvent(input$n_sel2, {
+    n_filter = salary |>
+      group_by(Job.Title) |>
+      summarise(count = n()) |>
+      filter(count >= input$n_sel2) |>
+      pull(Job.Title)
+    
+    job_vec = job_vec[job_vec %in% n_filter]
+    
+    updateSelectizeInput(inputId = "job_sel2",
+                      choices = job_vec)
+  })
   
   
   job_react = reactive({
@@ -311,6 +338,12 @@ server <- function(input, output, session) {
     freq_df
   })
   
+  violin_react = reactive({
+    violin_df = salary |>
+      filter(Job.Title %in% input$job_sel2)
+    violin_df
+  })
+  
   output$freq_plot = renderPlot({
     ggplot(data = freq_react(), aes(x = Salary.in.USD, color = as_factor(.data[[input$color_sel]]))) +
       geom_freqpoly(linewidth = 1) +
@@ -321,6 +354,13 @@ server <- function(input, output, session) {
       scale_color_viridis_d() +
       theme(axis.text.x = element_text(angle = -45, hjust = 1))
   })
+  
+  output$violin_plot = renderPlot(({
+    ggplot(data = violin_react(), aes(x = Job.Title, y = Salary.in.USD)) +
+      geom_violin(fill = "lightgreen", color = "forestgreen") +
+      labs(title = glue::glue("Violin Plot of Salary (USD)"), x = "Job Title", y = "Salary (USD)") +
+      theme_minimal(base_size = 20)
+  }))
   
   output$hist_plot = renderPlot({
     ggplot(data = job_react(), aes(x = Salary.in.USD)) +

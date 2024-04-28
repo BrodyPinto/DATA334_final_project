@@ -1,0 +1,25 @@
+---
+title: "Data Science Salaries Written Report"
+author: "Brody Pinto"
+format: 
+  html:
+    embed-resources: true
+warning: false
+---
+
+## Abstract
+
+For my Data Visualization final project, I made a Shiny App to look at salaries for data science and other related jobs. This project is of an exploratory nature, thus there is no one driving research question I aimed to answer. Instead, my goal was to provide an app that allows the user to visualize any trends they may be interested in, giving the user the autonomy to explore the data in any way they choose. This high degree of interactivity, however, makes the process of "data storytelling" nearly impossible. Thus, in this report, I will highlight three case studies that are of particular interest to me with the hopes of providing insight towards the use and interpretation of the app.
+
+<br>
+
+## Introduction
+
+<br>
+
+## Case Study Visuals
+
+<br>
+
+## Conclusions
+
