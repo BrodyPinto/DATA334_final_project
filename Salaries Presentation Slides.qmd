@@ -1,0 +1,126 @@
+---
+title: "Salaries_Presentation_Slides"
+name:
+format: revealjs
+---
+
+```{r}
+#/ echo: false
+#/ warning: false
+#/ output:false
+library(tidyverse)
+
+theme_set(theme_minimal())
+
+salary <- read.csv("data/v7_Latest_Data_Science_Salaries.csv", stringsAsFactors = TRUE) |>
+  filter(!is.na(Salary.in.USD))
+
+## Question: What happens in the case_when when there is a "Business Intelligence Analyst"?
+
+salary = salary |>
+  mutate(Job.Category = case_when(str_detect(Job.Title, pattern = "AI ") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Autonomous") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Computer Vision") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "NLP") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "Prompt Engineer") == TRUE ~ "Artificial Intelligence",
+                                  str_detect(Job.Title, pattern = "BI ") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Business") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Data Product") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Financ") == TRUE ~ "Business Intelligence",
+                                  str_detect(Job.Title, pattern = "Data Sci") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Lead") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Manage") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Data Specialist") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "Head of Data") == TRUE ~ "Data Science",
+                                  str_detect(Job.Title, pattern = "ML") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Machine") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Deep Learning") == TRUE ~ "Machine Learning",
+                                  str_detect(Job.Title, pattern = "Big ") == TRUE ~ "Big Data",
+                                  str_detect(Job.Title, pattern = "Cloud") == TRUE ~ "Cloud Data",
+                                  str_detect(Job.Title, pattern = "Data Architect") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Engineer") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Developer") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Infrastructure") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "ETL ") == TRUE ~ "Data Organization",
+                                  str_detect(Job.Title, pattern = "Data Operations") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "DevOps") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Integration") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Strateg") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Decision Scientist") == TRUE ~ "Data Operations",
+                                  str_detect(Job.Title, pattern = "Data Model") == TRUE ~ "Data Modeling",
+                                  str_detect(Job.Title, pattern = "Data Quality") == TRUE ~ "Data Quality",
+                                  str_detect(Job.Title, pattern = "Data Vis") == TRUE ~ "Data Visualization",
+                                  str_detect(Job.Title, pattern = "Research Analyst") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Research Engineer") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Research Scientist") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Applied Scientist") == TRUE ~ "Research",
+                                  str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics"
+                                  )) |>
+  mutate(Company.Location = as.character(Company.Location),
+         Employment.Type = as.character(Employment.Type),
+         Experience.Level = fct_relevel(Experience.Level, c("Entry", "Mid", "Senior", "Executive")),
+         Company.Size = fct_relevel(Company.Size, c("Small", "Medium", "Large")))
+```
+
+
+## Data
+
+* I found this dataset, called Latest Data Science Salaries, published by Sourav Banerjee
+* The data ranges from 2020 to the beginning of 2024 and is primarily of jobs in the USA, but also has some global data as well
+  
+## Variables of Interest
+
+* `Salary.in.USD`: job salary converted to USD
+* `Job.Title`: job position title
+* `Job.Category`: category of job position (added by myself)
+* `Experience.Level`: factor of individual's experience level (Entry, Mid, Senior, Executive)
+* `Company.Size`: factor of the company's size (Small, Medium, Large)
+* `Company.Location`: geographic location of the company
+* `Employment.Type`: factor of job position type (Full-Time, Part-Time, Freelance)
+* `Year`: year of employment (2020-2024)
+
+## Questions of Interest:
+
+1. What is the distribution of salary for Data Scientist Entry- and Mid-level positions?
+2. How has the experience level and pay of Data Analysts changed over the course of this dataset (2020 through early 2024)?
+3. For the Engineer position, how does the shape of the pay differ for different specialties (AI Engineer vs. Data Science Engineer vs. Machine Learning Engineer)?
+
+## Visual 1
+
+```{r}
+ds_static = salary |> 
+  filter(Job.Title == "Data Scientist") |>
+  filter(Experience.Level %in% c("Entry", "Mid"))
+ggplot(data = ds_static, aes(x = Salary.in.USD)) +
+      geom_histogram(bins = 15, col = "lightblue4", fill = "lightblue") +
+      labs(title = glue::glue("Histogram of Salary (USD) for Entry- and Mid-Level Data Scientist Jobs")) +
+      theme_minimal(base_size = 20) +
+      labs(x = "Salary (USD)")
+```
+
+## Visual 2
+
+```{r}
+da_static = salary |>
+      filter(Job.Title == "Data Analyst")
+ggplot(data = da_static, aes(x = Salary.in.USD, color = Experience.Level)) +
+      geom_freqpoly(linewidth = 1) +
+      facet_wrap(~ Year) +
+      labs(title = glue::glue("Frequency Plot of Salary (USD) for Data Analyst Jobs")) +
+      theme_minimal(base_size = 20) +
+      labs(x = "Salary (USD)", color = "Experience Level") +
+      scale_color_viridis_d() +
+      theme(axis.text.x = element_text(angle = -45, hjust = 1))
+```
+
+## Visual 3
+
+```{r}
+violin_df = salary |>
+      filter(Job.Title %in% c("AI Engineer", "Data Science Engineer", "Machine Learning Engineer"))
+ggplot(data = violin_df, aes(x = Job.Title, y = Salary.in.USD)) +
+      geom_violin(fill = "lightgreen", color = "forestgreen") +
+      labs(title = glue::glue("Violin Plot of Salary (USD)"), x = "Job Title", y = "Salary (USD)") +
+      theme_minimal(base_size = 20)
+```
+
