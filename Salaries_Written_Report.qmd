@@ -9,15 +9,36 @@ warning: false
 
 ## Abstract
 
-For my Data Visualization final project, I made a Shiny App to look at salaries for data science and other related jobs. This project is of an exploratory nature, thus there is no one driving research question I aimed to answer. Instead, my goal was to provide an app that allows the user to visualize any trends they may be interested in, giving the user the autonomy to explore the data in any way they choose. This high degree of interactivity, however, makes the process of "data storytelling" nearly impossible. Thus, in this report, I will highlight three case studies that are of particular interest to me with the hopes of providing insight towards the use and interpretation of the app.
+For my Data Visualization final project, I made a Shiny App to look at salaries for data science and other related jobs. This project is of an exploratory nature, thus there is no one driving research question I aimed to answer. Instead, my goal was to provide an app that allows the user to visualize any trends they may be interested in, giving the user the autonomy to explore the data in any way they choose. This high degree of interactivity, however, makes the process of "data storytelling" nearly impossible. Thus, in this report, I will highlight three questions of interest with the hopes of providing insight towards the use and interpretation of the app. The case studies presented in this report aim to examine the distribution of pay for data scientists starting their careers, to visualize the increasing trend in data analytics jobs over time, and to emphasize the spread in salaries for engineering positions of different specialties.
 
 <br>
 
 ## Introduction
 
+
+
+**Variables of Interest**
+
+* `Salary.in.USD`: job salary converted to USD
+* `Job.Title`: job position title
+* `Job.Category`: category of job position (added by myself)
+* `Experience.Level`: factor of individual's experience level (Entry, Mid, Senior, Executive)
+* `Company.Size`: factor of the company's size (Small, Medium, Large)
+* `Company.Location`: geographic location of the company
+* `Employment.Type`: factor of job position type (Full-Time, Part-Time, Freelance)
+* `Year`: year of employment (2020-2024)
+
+**Questions of Interest**
+
+1. What is the distribution of salary for Data Scientist Entry- and Mid-level positions?
+2. How has the experience level and pay of Data Analysts changed over the course of this dataset (2020 through early 2024)?
+3. For the Engineer position, how does the shape of the pay differ for different specialties (AI Engineer vs. Data Science Engineer vs. Machine Learning Engineer)?
+
 <br>
 
 ## Case Study Visuals
+
+
 
 <br>
 

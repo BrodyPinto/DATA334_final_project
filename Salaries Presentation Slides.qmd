@@ -1,6 +1,6 @@
 ---
-title: "Salaries_Presentation_Slides"
-name:
+title: "Data Science Salaries"
+name: "Brody Pinto"
 format: revealjs
 ---
 
@@ -72,14 +72,10 @@ salary = salary |>
 
 * `Salary.in.USD`: job salary converted to USD
 * `Job.Title`: job position title
-* `Job.Category`: category of job position (added by myself)
 * `Experience.Level`: factor of individual's experience level (Entry, Mid, Senior, Executive)
-* `Company.Size`: factor of the company's size (Small, Medium, Large)
-* `Company.Location`: geographic location of the company
-* `Employment.Type`: factor of job position type (Full-Time, Part-Time, Freelance)
 * `Year`: year of employment (2020-2024)
 
-## Questions of Interest:
+## Questions of Interest
 
 1. What is the distribution of salary for Data Scientist Entry- and Mid-level positions?
 2. How has the experience level and pay of Data Analysts changed over the course of this dataset (2020 through early 2024)?
@@ -93,7 +89,7 @@ ds_static = salary |>
   filter(Experience.Level %in% c("Entry", "Mid"))
 ggplot(data = ds_static, aes(x = Salary.in.USD)) +
       geom_histogram(bins = 15, col = "lightblue4", fill = "lightblue") +
-      labs(title = glue::glue("Histogram of Salary (USD) for Entry- and Mid-Level Data Scientist Jobs")) +
+      labs(title = glue::glue("Salary for Entry- and Mid-Level Data Scientists")) +
       theme_minimal(base_size = 20) +
       labs(x = "Salary (USD)")
 ```
@@ -106,7 +102,7 @@ da_static = salary |>
 ggplot(data = da_static, aes(x = Salary.in.USD, color = Experience.Level)) +
       geom_freqpoly(linewidth = 1) +
       facet_wrap(~ Year) +
-      labs(title = glue::glue("Frequency Plot of Salary (USD) for Data Analyst Jobs")) +
+      labs(title = glue::glue("Salary for Data Analyst Jobs")) +
       theme_minimal(base_size = 20) +
       labs(x = "Salary (USD)", color = "Experience Level") +
       scale_color_viridis_d() +
@@ -120,7 +116,7 @@ violin_df = salary |>
       filter(Job.Title %in% c("AI Engineer", "Data Science Engineer", "Machine Learning Engineer"))
 ggplot(data = violin_df, aes(x = Job.Title, y = Salary.in.USD)) +
       geom_violin(fill = "lightgreen", color = "forestgreen") +
-      labs(title = glue::glue("Violin Plot of Salary (USD)"), x = "Job Title", y = "Salary (USD)") +
+      labs(title = glue::glue("Violin Plot"), x = "Job Title", y = "Salary (USD)") +
       theme_minimal(base_size = 20)
 ```
 
