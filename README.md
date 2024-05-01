@@ -6,4 +6,5 @@ To start, I'm going to want to include an option to do frequency plots and/or hi
 
 I also want to allow the user to select any number of years (2020-2024) to be included.
 
-If I have time, I may try to include a user option to try fitting logistic regression models (with up to 2 or 3 predictors) to the data.
+
+Link to the Shiny App: https://brodypinto.shinyapps.io/DATA334_final_project/

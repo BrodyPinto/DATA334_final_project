@@ -1,0 +1,13 @@
+name: DATA334_final_project
+title: DATA334_final_project
+username: brodypinto
+account: brodypinto
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11910721
+bundleId: 8563979
+url: https://brodypinto.shinyapps.io/DATA334_final_project/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|Final_Project_Jobs.qmd|README.md|Salaries Presentation Slides.html|Salaries Presentation Slides.qmd|Salaries_Written_Report.qmd|Salaries-Presentation-Slides_files/figure-revealjs/unnamed-chunk-2-1.png|Salaries-Presentation-Slides_files/figure-revealjs/unnamed-chunk-3-1.png|Salaries-Presentation-Slides_files/figure-revealjs/unnamed-chunk-4-1.png|Salaries Presentation Slides_files

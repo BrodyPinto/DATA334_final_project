@@ -1,13 +1,3 @@
----
-title: "DATA334 Final Project - Data Science Salaries Shiny App"
-author: "Brody Pinto"
-format: 
-  html:
-    embed-resources: true
-warning: false
----
-
-```{r}
 library(tidyverse)
 
 theme_set(theme_minimal())
@@ -53,31 +43,12 @@ salary = salary |>
                                   str_detect(Job.Title, pattern = "Research Scientist") == TRUE ~ "Research",
                                   str_detect(Job.Title, pattern = "Applied Scientist") == TRUE ~ "Research",
                                   str_detect(Job.Title, pattern = "Analy") == TRUE ~ "Data Analytics"
-                                  )) |>
+  )) |>
   mutate(Company.Location = as.character(Company.Location),
          Employment.Type = as.character(Employment.Type),
          Experience.Level = fct_relevel(Experience.Level, c("Entry", "Mid", "Senior", "Executive")),
          Company.Size = fct_relevel(Company.Size, c("Small", "Medium", "Large")))
 
-## to find any categories I may have missed
-missing_vector = vector("numeric", length = 0)
-for (i in salary$Job.Category) {
-  if (!i %in% category_vec) {
-    missing_vector = append(missing_vector, index(i))
-  }
-}
-print(missing_vector)
-```
-
-## My goal for this final project is to create a shiny app that allows the user to visualize the data in as many different ways as possible!
-
-To start, I'm going to want to include an option to do frequency plots and/or histograms for the salaries per `Job.Title`, per `Employment.Type`, per `Experience.Level`, per `Company.Location`, and per `Company.Size`. I will also include a reactive summary statistics table (mean, median, min, max, standard deviation, count).
-
-I also want to allow the user to select any number of years (2020-2024) to be included.
-
-If I have time, I may try to include a user option to try fitting logistic regression models (with up to 2 or 3 predictors) to the data.
-
-```{r}
 library(shiny)
 
 job_vec <- unique(salary$Job.Title) |>
@@ -211,31 +182,30 @@ server <- function(input, output, session) {
                       choices = job_vec)
   })
   
-  observeEvent(c(input$category_sel1, input$n_sel), {
+  observeEvent(input$category_sel1, {
     if (input$category_sel1 == "Any") {
       job_vec = job_vec
-      
-      n_filter = salary |>
-        group_by(Job.Title) |>
-        summarise(count = n()) |>
-        filter(count >= input$n_sel) |>
-        pull(Job.Title)
-      
-      job_vec = job_vec[job_vec %in% n_filter]
     } else {
       job_vec = salary |> 
         filter(Job.Category == input$category_sel1) |>
         distinct(Job.Title) |>
         pull(Job.Title)
-      
-      n_filter = salary |>
-        group_by(Job.Title) |>
-        summarise(count = n()) |>
-        filter(count >= input$n_sel) |>
-        pull(Job.Title)
-      
-      job_vec = job_vec[job_vec %in% n_filter]
     }
+    
+    updateSelectInput(inputId = "job_sel1",
+                      choices = job_vec)
+  })
+  
+  
+  ## can I put this observe event inside the above one to have it constantly update the list of choices in job_vec based on both the category_sel and n_sel?
+  observeEvent(input$n_sel, {
+    n_filter = salary |>
+      group_by(Job.Title) |>
+      summarise(count = n()) |>
+      filter(count >= input$n_sel) |>
+      pull(Job.Title)
+    
+    job_vec = job_vec[job_vec %in% n_filter]
     
     updateSelectInput(inputId = "job_sel1",
                       choices = job_vec)
@@ -270,7 +240,7 @@ server <- function(input, output, session) {
     updateSelectInput(inputId = "location_sel",
                       choices = location_vec,
                       selected = "Any")
-     
+    
     updateCheckboxGroupInput(inputId = "exp_sel",
                              choices = exp_vec,
                              selected = exp_vec)
@@ -290,7 +260,7 @@ server <- function(input, output, session) {
     updateRadioButtons(inputId = "color_sel",
                        choices = color_vec)
   })
-
+  
   observeEvent(input$n_sel2, {
     n_filter = salary |>
       group_by(Job.Title) |>
@@ -301,7 +271,7 @@ server <- function(input, output, session) {
     job_vec = job_vec[job_vec %in% n_filter]
     
     updateSelectizeInput(inputId = "job_sel2",
-                      choices = job_vec)
+                         choices = job_vec)
   })
   
   
@@ -380,5 +350,3 @@ server <- function(input, output, session) {
   })
 }
 shinyApp(ui, server)
-```
-
