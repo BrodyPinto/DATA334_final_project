@@ -182,30 +182,31 @@ server <- function(input, output, session) {
                       choices = job_vec)
   })
   
-  observeEvent(input$category_sel1, {
+  observeEvent(c(input$category_sel1, input$n_sel), {
     if (input$category_sel1 == "Any") {
       job_vec = job_vec
+      
+      n_filter = salary |>
+        group_by(Job.Title) |>
+        summarise(count = n()) |>
+        filter(count >= input$n_sel) |>
+        pull(Job.Title)
+      
+      job_vec = job_vec[job_vec %in% n_filter]
     } else {
       job_vec = salary |> 
         filter(Job.Category == input$category_sel1) |>
         distinct(Job.Title) |>
         pull(Job.Title)
+      
+      n_filter = salary |>
+        group_by(Job.Title) |>
+        summarise(count = n()) |>
+        filter(count >= input$n_sel) |>
+        pull(Job.Title)
+      
+      job_vec = job_vec[job_vec %in% n_filter]
     }
-    
-    updateSelectInput(inputId = "job_sel1",
-                      choices = job_vec)
-  })
-  
-  
-  ## can I put this observe event inside the above one to have it constantly update the list of choices in job_vec based on both the category_sel and n_sel?
-  observeEvent(input$n_sel, {
-    n_filter = salary |>
-      group_by(Job.Title) |>
-      summarise(count = n()) |>
-      filter(count >= input$n_sel) |>
-      pull(Job.Title)
-    
-    job_vec = job_vec[job_vec %in% n_filter]
     
     updateSelectInput(inputId = "job_sel1",
                       choices = job_vec)
